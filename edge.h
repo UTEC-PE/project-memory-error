@@ -9,11 +9,11 @@ class Edge {
         typedef typename G::E E;
         typedef typename G::node node;
 
-        node* nodes[2];
+        node* nodes[2]; //Los dos nodos que conecta mirarlo asi: Node* start, Node* end
 
     private:
-        E data;
-        bool dir;
+        E data; //Peso numerico
+        bool dir; //Si es direccionado o no
 };
 
 #endif

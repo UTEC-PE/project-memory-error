@@ -11,20 +11,20 @@ using namespace std;
 
 class Traits {
 	public:
-		typedef char N;
-		typedef int E;
+		typedef char N; //Node es de tipo char
+		typedef int E; //Edge es de tipo int
 };
 
 template <typename Tr>
 class Graph {
     public:
-        typedef Graph<Tr> self;
-        typedef Node<self> node;
-        typedef Edge<self> edge;
-        typedef vector<node*> NodeSeq;
+        typedef Graph<Tr> self; //Para defi
+        typedef Node<self> node; //Para definir todos los nodos mas rapido
+        typedef Edge<self> edge; //Para definir todos los edges mas rapido
+        typedef vector<node*> NodeSeq; //Alias                 
         typedef list<edge*> EdgeSeq;
-        typedef typename Tr::N N;
-        typedef typename Tr::E E;
+        typedef typename Tr::N N; //Alias
+        typedef typename Tr::E E; //Alias
         typedef typename NodeSeq::iterator NodeIte;
         typedef typename EdgeSeq::iterator EdgeIte;
 
@@ -32,6 +32,10 @@ class Graph {
         NodeSeq nodes;
         NodeIte ni;
         EdgeIte ei;
+
+
+    public:
+       //list<edge*> kruskal();
 };
 
 typedef Graph<Traits> graph;
