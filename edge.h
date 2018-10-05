@@ -11,9 +11,19 @@ class Edge {
 
         node* nodes[2]; //Los dos nodos que conecta mirarlo asi: Node* start, Node* end
 
+        Edge(E peso, node* node1, node* node2, bool dir):data(peso),dir(dir){
+            nodes[0]=node1;
+            nodes[1]=node2;
+    	  };
+
+        E getEdata(){
+          return data;
+        }
+
     private:
         E data; //Peso numerico
         bool dir; //Si es direccionado o no
+
 };
 
 #endif

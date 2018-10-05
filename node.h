@@ -11,8 +11,15 @@ class Node {
 
         EdgeSeq edges; //lista de adyacencia, list de edges
 
+        Node(N value):data(value){}
+
+        N getNdata(){
+          return data;
+        }
+
+
     private:
-        N data; //Tipo de fato N del trait
+        N data; //Tipo de dato N del trait
         double x; //solo para graficar en librerias como blue
         double y; //solo para graficar en librerias como blue
 };
