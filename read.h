@@ -1,6 +1,8 @@
 #ifndef READ_H
 #define READ_H
 
+#include <fstream>
+
 #include "graph.h"
 
 /**
@@ -12,9 +14,9 @@ template <typename G>
 class Read {
 	typedef typename G::N N;
 	typedef typename G::E E;
-		
+
 	public:
-		Read(char* file) {
+		Read(const string& file, int vertices) {
             // TODO
         }
 		

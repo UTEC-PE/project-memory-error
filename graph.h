@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include <string>
 
 #include "node.h"
 #include "edge.h"
@@ -32,8 +33,14 @@ class Graph {
         NodeSeq nodes;
         NodeIte ni;
         EdgeIte ei;
-};
 
+    public:
+        Graph (){}
+        void insert_nodo(node* nodo){NodeSeq.push_back(nodo);}
+};
 typedef Graph<Traits> graph;
+
+
+
 
 #endif

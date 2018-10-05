@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/edge.h
+node.h
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/node.h
+
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/graph.h
+vector
+-
+list
+-
+node.h
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/node.h
+edge.h
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/edge.h
+
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/main.cpp
+GL/glx.h
+-
+iostream
+-
+graph.h
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/graph.h
+
+/home/chip/Algoritmos y Estructuras de Datos/PROYECTO GRAFOS/project-memory-error/node.h
+
