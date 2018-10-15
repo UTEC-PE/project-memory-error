@@ -7,19 +7,23 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
-	graph G;
+	graph G(false);
 
 	G.insertNode('A');
 	G.insertNode('B');
 	G.insertNode('C');
 	G.insertNode('D');
 
-	G.insertEdge(1, 0, 1, false);
-	G.insertEdge(2, 1, 2, false);
-	G.insertEdge(3, 1, 3, false);
-	G.insertEdge(4, 2, 3, false);
+	G.insertEdge(6, 0, 1);
+	G.insertEdge(7, 1, 2);
+	G.insertEdge(8, 1, 3);
+	G.insertEdge(9, 2, 3);
 
 	G.print();
+
+	cout << endl;
+
+	G.Densidad(0.6);
 
     return 0;
 }
