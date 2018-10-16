@@ -1,4 +1,4 @@
-#include <GL/glx.h>
+
 #include <iostream>
 
 #include "graph.h"
@@ -6,7 +6,10 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    Graph <int> grafo;
+	graph G("graph_construct.txt");
+	G.print();
 
-    return EXIT_SUCCESS;
+	return 0;
 }
+
+//a la hora de usar kruskal que no chanque al grafo

@@ -9,13 +9,19 @@ class Node {
         typedef typename G::edge edge;
         typedef typename G::EdgeSeq EdgeSeq;
 
-        EdgeSeq edges;
+        EdgeSeq edges; //lista de adyacencia, list de edges
+
+        Node(N value,double x, double y):data(value),x(0),y(0){}
+
+        N getNdata(){
+          return data;
+        }
+
 
     private:
-        N data;
-        double x;
-        double y;
-
+        N data; //Tipo de dato N del trait
+        double x; //solo para graficar en librerias como blue
+        double y; //solo para graficar en librerias como blue
 };
 
 #endif
