@@ -140,9 +140,7 @@ class Graph {
             float dens = 0;
 
             for(ni = nodes.begin(); ni != nodes.end(); ni++){
-                for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
-                    sizeEdges += 1;
-                }
+                sizeEdges += (*ni)->edges.size();
             }
 
             dens = sizeEdges/(sizeNodes*(sizeNodes-1));
@@ -154,6 +152,52 @@ class Graph {
                 return false;
             }
         }
+
+				void findGrado(N value){
+
+					if(dir==false){
+
+						for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+							if((*ni)->getNdata() == value){
+								cout << "Grado total para no direccionado: " << (*ni)->edges.size() << endl;
+							}
+						}
+
+					}
+					else{
+						int gsalida = 0;
+						int gentrada = 0;
+						int gtotal = 0;
+
+						for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+							if((*ni)->getNdata() == value){
+								gsalida = (*ni)->edges.size();
+								gtotal += (*ni)->edges.size();
+							}
+							else{
+								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ei++){
+									if((*ei)->nodes[1]->getNdata()==value){
+										gtotal += 1;
+										gentrada +=1;
+									}
+								}
+							}
+						}
+
+						cout << "Grado total para direccionado: " << gtotal << endl;
+						cout << "Grado de salida para direccionado: " << gsalida << endl;
+						cout << "Grado de entrada para direccionado: " << gentrada << endl;
+
+						if(gsalida==0){
+							cout << value << " es un nodo hundido" << endl;
+						}
+						if(gentrada==0){
+							cout << value << " es un nodo fuente" << endl;
+						}
+
+					}
+
+				}
 
 
        //list<edge*> kruskal();
