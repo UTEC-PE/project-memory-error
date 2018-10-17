@@ -56,11 +56,11 @@ class Graph {
         void insertEdge(E peso, int node1, int node2){ //posicion que quieres conectar
             //Cambiar de posicion a char
 
-            edge* NewEdge1 = new edge(peso, nodes[node1], nodes[node2]); 
+            edge* NewEdge1 = new edge(peso, nodes[node1], nodes[node2]);
             nodes[node1] -> edges.push_back(NewEdge1);
 
             if(dir==false){
-                edge* NewEdge2 = new edge(peso, nodes[node1], nodes[node2]);
+                edge* NewEdge2 = new edge(peso, nodes[node2], nodes[node1]);
                 nodes[node2] -> edges.push_back(NewEdge2);
             }
 
@@ -68,8 +68,8 @@ class Graph {
 
         void removeEdge(N node1, N node2){ //node1->node2 if dir=true
 
-            for(ni = nodes.begin(); ni != nodes.end(); ni++){ 
-                if((*ni)->getNdata() == node1){ 
+            for(ni = nodes.begin(); ni != nodes.end(); ni++){
+                if((*ni)->getNdata() == node1){
                     for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
                         if(((*ei)->nodes[1])->getNdata() == node2){
                             (*ni) -> edges.remove(*ei);
@@ -94,32 +94,44 @@ class Graph {
 
         void removeNode(N value){
 
-            if(dir==false){
-                for(ni = nodes.begin(); ni != nodes.end(); ni++){
-                    if((*ni)->getNdata() == value){
-                        for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
-                            (*ei)->nodes[1] -> edges.remove((*ei)->nodes[0]);
-                        }
-                        (*ni)->edges.clear(); //borra toda la lista adjacente
-                        nodes.erase(ni); //borra nodo del vector nodes
-                    }
+	        for(ni = nodes.begin(); ni != nodes.end(); ni++){
+            if((*ni)->getNdata()==value){
+                (*ni)->edges.clear(); //borra toda la lista adjacente
+                nodes.erase(ni); //borra nodo del vector nodes
+								break;
+            }
+            for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
+                if((*ei)->nodes[1]->getNdata()==value){
+                    (*ni)->edges.remove(*ei);
+										break;
                 }
             }
-            else{
-                for(ni = nodes.begin(); ni != nodes.end(); ni++){
-                    if((*ni)->getNdata()==value){
-                        (*ni)->edges.clear(); //borra toda la lista adjacente
-                        nodes.erase(ni); //borra nodo del vector nodes                        
-                    }
-                    for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
-                        if(((*ei)->nodes[1])->getNdata()==value){
-                            (*ni)->edges.remove(*ei);
-                        }
-                    }
-                    cout << endl;
-                }
-            }
+	        }
         }
+
+				bool findNode(N node){
+					for(ni = nodes.begin(); ni != nodes.end(); ni++){
+						if((*ni)->getNdata() == node){
+							return true;
+							break;
+						}
+					}
+					return false;
+				}
+
+				bool findEdge(N node1, N node2){
+					for(ni = nodes.begin(); ni != nodes.end(); ni++){
+						if((*ni)->getNdata() == node1){
+							for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
+								if((*ei)->nodes[1]->getNdata()==node2){
+									return true;
+									break;
+								}
+							}
+						}
+					}
+					return false;
+				}
 
         bool Densidad(float cota){
 
@@ -142,7 +154,7 @@ class Graph {
                 return false;
             }
         }
-       
+
 
        //list<edge*> kruskal();
 
@@ -152,12 +164,12 @@ class Graph {
                 for(ei=(*ni)->edges.begin();ei!=(*ni)->edges.end();++ei){
                     cout <<"peso : ";
                     cout << (*ei)->getEdata();
-                    cout << ", nodo :";
+                    cout << ", nodo : ";
                     if((*ni)->getNdata()!= (*ei)->nodes[1]->getNdata()){
                         cout<<(*ei)->nodes[1]->getNdata();
                     }
                     else{
-                        cout<<(*ei)->nodes[0]->getNdata();
+                        cout<<"-----" <<(*ei)->nodes[0]->getNdata();
                     }
                     cout <<" | ";
                 }

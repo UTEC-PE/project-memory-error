@@ -7,7 +7,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
-	graph G(false);
+	graph G(true);
 
 	G.insertNode('A');
 	G.insertNode('B');
@@ -21,9 +21,11 @@ int main(int argc, char *argv[]) {
 
 	G.print();
 
+	cout << G.findEdge('H', 'F');
+
 	cout << endl;
 
-	G.Densidad(0.6);
+	G.print();
 
     return 0;
 }
