@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <limits.h>
+#include <map>
 
 #include "node.h"
 #include "edge.h"
@@ -32,13 +34,15 @@ class Graph {
         typedef typename EdgeSeq::iterator EdgeIte;
 
     private:
+				int cantidadNodos;
+				int cantidadAristas;
         NodeSeq nodes;
         NodeIte ni;
         EdgeIte ei;
 
 
     public:
-        Graph(string file):nodes(0){
+        Graph(string file):nodes(0),cantidadNodos(0),cantidadAristas(0){
 					ifstream infile(file);
 					int numNodos,nodo1,nodo2,direccion,peso;
 					char nombre;
@@ -49,39 +53,97 @@ class Graph {
 							insertNode(nombre,x,y);
 					}
 					while(infile >> peso >> nodo1 >> nodo2 >> direccion){
-							insertEdge(peso,nodo1,nodo2,direccion);
+						if(nodo1 < numNodos || nodo2 < numNodos)
+								insertEdge(peso,nodo1,nodo2,direccion);
 					}
 					// TODO
 				}
 
         void insertNode(N value, double x,double y){
-          for(int i=0; nodes.size() < i; i++){ //este nodes es de NodeSeq
-              if(value==(nodes[i])->getNdata()){
-                  throw "Ya existe un nodo con el mismo nombre";
+          for(int i=0; i < nodes.size(); i++){ //este nodes es de NodeSeq
+              if(value == nodes[i]->getNdata()){
+									return;
               }
           }
           node* NewNodo = new node(value,x,y);
           nodes.push_back(NewNodo);
+					cantidadNodos++;
         }
 
-        void insertEdge(int peso, int node1, int node2, bool dir){ //posicion que quieres conectar
-            //chequear si value esta en el vector maybe later
-            edge* NewEdge1 = new edge(peso, nodes[node1], nodes[node2], dir); //este nodes es de edge
-            nodes[node1] -> edges.push_back(NewEdge1);
-
-            if(dir== false){
-                edge* NewEdge2 = new edge(peso, nodes[node2], nodes[node1], dir);
-                nodes[node2] -> edges.push_back(NewEdge2);
-            }
+        void insertEdge(int peso, int node1, int node2, bool dir){
+/*					for(auto ed: nodes[node1]->edges){
+						if(ed->getSecondPointer() == nodes[node2] || ed -> getFirstPointer() == nodes[node1]){
+							return;
+						}
+					}
+*/					//posicion que quieres conectar
+	          edge* NewEdge1 = new edge(peso, nodes[node1], nodes[node2], dir); //este nodes es de edge
+	          nodes[node1] -> edges.push_back(NewEdge1);
+						cantidadAristas++;
+	          if(dir== false){
+	             edge* NewEdge2 = new edge(peso, nodes[node2], nodes[node1], dir);
+	             nodes[node2] -> edges.push_back(NewEdge2);
+						}
         }
 
         void removeNode(){}
 
+				void setAllNotVisited(){
+					for(auto item: nodes){
+						item->setNotVisited();
+					}
+				}
+
+				void prim(){
+					setAllNotVisited();
+					multimap<E,edge*> EdgeMap;
+					int visitedNodes = 1;
+					auto ni = nodes[0];
+					cout << "PRIM: ";
+					while(visitedNodes <= cantidadNodos){
+								for(auto ei:ni->edges){
+										if(!ei->getSecondPointer()->isVisited()){
+														EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+													(*EdgeMap.begin()).second->getFirstPointer()->setVisited();
+											}
+										}
+										ni = (*EdgeMap.begin()).second->getSecondPointer();
+										if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
+											cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
+											(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
+										}
+										EdgeMap.erase(EdgeMap.begin());
+										visitedNodes ++;
+								}
+		        }
+
+				void kruskal(){
+					setAllNotVisited();
+					multimap<E,edge*> EdgeMap;
+					for(auto ni:nodes){
+							for(auto ei:ni->edges){
+									if(!ei->getSecondPointer()->isVisited()){
+											EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+											(*EdgeMap.begin()).second->getFirstPointer()->setVisited();
+										}
+								}
+						}
+				cout << endl << "KRUSKAL: ";
+				while(EdgeMap.size() > 0){
+						if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
+							cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
+							(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
+						}
+						EdgeMap.erase(EdgeMap.begin());
+					}
+					cout << endl;
+        }
+
         void print(){
-            for(ni = nodes.begin(); ni != nodes.end(); ni++){
-                cout << (*ni)->getNdata() << "| ";
-                for(auto item:(*ni)->edges){
-                    cout << item->getSecondPointer()->getNdata() << ' ';
+            for(auto ni: nodes){
+                cout << ni->getNdata() << "| ";
+                for(auto item: ni->edges){
+                    cout << item->getSecondPointer()->getNdata() <<":"<<item->getEdata()<<' ';
                 }
                     cout << endl;
             }

@@ -6,8 +6,10 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	graph G("graph_construct.txt");
+	graph G("graph_construct2.txt");
 	G.print();
+	G.prim();
+	G.kruskal();
 
 	return 0;
 }
