@@ -3,9 +3,13 @@
 
 #include <vector>
 #include <list>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <limits.h>
+#include <map>
 #include <queue>
 #include <stack>
-#include<iostream>
 
 #include "node.h"
 #include "edge.h"
@@ -21,7 +25,7 @@ class Traits {
 template <typename Tr>
 class Graph {
     public:
-        typedef Graph<Tr> self; //Para defi
+        typedef Graph<Tr> self; //Para definir tipo de grafo
         typedef Node<self> node; //Para definir todos los nodos mas rapido
         typedef Edge<self> edge; //Para definir todos los edges mas rapido
         typedef vector<node*> NodeSeq; //Alias
@@ -32,6 +36,8 @@ class Graph {
         typedef typename EdgeSeq::iterator EdgeIte;
 
     private:
+				int cantidadNodos;
+				int cantidadAristas;
         NodeSeq nodes;
         NodeIte ni;
         EdgeIte ei;
@@ -39,7 +45,33 @@ class Graph {
 
 
     public:
-        Graph(bool dir):nodes(0), dir(dir){}
+        Graph(bool dir, string file):nodes(0), dir(dir){
+					ifstream infile(file);
+					int numNodos,nodo1,nodo2,direccion,peso;
+					char nombre;
+					double x,y;
+					infile >> numNodos;
+					for(int i = 0;i < numNodos ; i++){
+							infile >> nombre >> x >> y;
+							insertNode(nombre,x,y);
+					}
+					while(infile >> peso >> nodo1 >> nodo2 >> direccion){
+						if(nodo1 < numNodos || nodo2 < numNodos || nodo1 == nodo2)
+								insertEdge(peso,nodo1,nodo2,direccion);
+					}
+					// TODO
+				}
+
+        void insertNode(N value, double x,double y){
+          for(int i=0; i < nodes.size(); i++){ //este nodes es de NodeSeq
+              if(value == nodes[i]->getNdata()){
+									return;
+              }
+          }
+          node* NewNodo = new node(value,x,y);
+          nodes.push_back(NewNodo);
+					cantidadNodos++;
+        }
 
 
 
@@ -304,24 +336,67 @@ class Graph {
 					return transpose;
 				}
 
+				void setAllNotVisited(){
+					for(auto item: nodes){
+						item->setNotVisited();
+					}
+				}
+
+				void prim(){
+					setAllNotVisited();
+					multimap<E,edge*> EdgeMap;
+					int visitedNodes = 1;
+					auto ni = nodes[0];
+					cout << "PRIM: ";
+					while(visitedNodes <= cantidadNodos){
+								for(auto ei:ni->edges){
+										if(!ei->getSecondPointer()->isVisited()){
+														EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+													(*EdgeMap.begin()).second->getFirstPointer()->setVisited();
+											}
+										}
+										ni = (*EdgeMap.begin()).second->getSecondPointer();
+										if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
+											cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
+											(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
+										}
+									EdgeMap.erase(EdgeMap.begin());
+									visitedNodes ++;
+						}
+		    }
+
+				void kruskal(){
+					setAllNotVisited();
+					multimap<E,edge*> EdgeMap;
+					for(auto ni:nodes){
+							for(auto ei:ni->edges){
+									if(!ei->getSecondPointer()->isVisited()){
+											EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+											(*EdgeMap.begin()).second->getFirstPointer()->setVisited();
+										}
+								}
+						}
+				cout << endl << "KRUSKAL: ";
+				while(EdgeMap.size() > 0){
+						if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
+							cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
+							(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
+						}
+						EdgeMap.erase(EdgeMap.begin());
+					}
+					cout << endl;
+        }
+
         void print(){
-            for (ni=nodes.begin();ni!=nodes.end();++ni){
-                cout << (*ni)->getNdata() << endl;
-                for(ei=(*ni)->edges.begin();ei!=(*ni)->edges.end();++ei){
-                    cout <<"peso : ";
-                    cout << (*ei)->getEdata();
-                    cout << ", nodo : ";
-                    if((*ni)->getNdata()!= (*ei)->nodes[1]->getNdata()){
-                        cout<<(*ei)->nodes[1]->getNdata();
-                    }
-                    else{
-                        cout<<"-----" <<(*ei)->nodes[0]->getNdata();
-                    }
-                    cout <<" | ";
+            for(auto ni: nodes){
+                cout << ni->getNdata() << "| ";
+                for(auto item: ni->edges){
+                    cout << item->getSecondPointer()->getNdata() <<":"<<item->getEdata()<<' ';
                 }
-                cout <<endl;
+                    cout << endl;
             }
         }
+
 
 };
 

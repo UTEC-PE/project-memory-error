@@ -20,6 +20,14 @@ class Edge {
           return data;
         }
 
+        node* getFirstPointer(){
+           return nodes[0];
+        }
+
+        node* getSecondPointer(){
+            return nodes[1];
+        }
+
     private:
         E data; //Peso numerico
         bool dir; //Si es direccionado o no
