@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <list>
+#include <queue>
+#include <stack>
 #include<iostream>
 
 #include "node.h"
@@ -199,8 +201,108 @@ class Graph {
 
 				}
 
+				void BFS(N startN){
+					queue<N> myqueue;
+					vector<N> visited;
 
-       //list<edge*> kruskal();
+					myqueue.push(startN);
+					visited.push_back(startN);
+
+					int lvl=1;
+					bool lvlh=false;
+
+					while(!myqueue.empty()){
+
+						N current = myqueue.front();
+						for(ni=nodes.begin();ni!=nodes.end();++ni){
+							if(((*ni)->getNdata())==current){
+								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+									if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //If edge not in visited
+										myqueue.push((*ei)->nodes[1]->getNdata());
+										visited.push_back((*ei)->nodes[1]->getNdata());
+										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
+										lvlh=true;
+									}
+								}
+								lvl+=lvlh;
+								lvlh=false;
+								myqueue.pop();
+							}
+						}
+
+					}
+				}
+
+				void DFS(N startN, bool &fc){
+					stack<N> mystack;
+					vector<N> visited;
+
+					mystack.push(startN);
+					visited.push_back(startN);
+
+					while(!mystack.empty()){
+						N current = mystack.top();
+						for(ni=nodes.begin();ni!=nodes.end();++ni){
+							if(((*ni)->getNdata())==current){
+								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+									if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //if *ei not in visited
+										mystack.push((*ei)->nodes[1]->getNdata());
+										visited.push_back((*ei)->nodes[1]->getNdata());
+										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
+										break;
+									}
+									else{
+										mystack.pop();
+									}
+								}
+							}
+						}
+
+					}
+
+					//si dfs ha visitado todos los nodos
+					if(visited.size() == nodes.size()){fc = true;}
+					else{fc=false;}
+				}
+
+				bool stronglyConnected(N startN){
+
+					if(dir){
+						bool fc;
+
+						DFS(startN, fc);
+						if(fc==false){return false;}
+						else{
+
+							getTranspose().DFS(startN, fc);
+							if(fc==false){return false;}
+							else{return true;}
+
+						}
+
+					}
+					else{
+						throw "Only works for directed graphs";
+					}
+
+				}
+
+				self getTranspose(){
+					self transpose(dir);
+					for(ni=nodes.begin();ni!=nodes.end();++ni){
+						transpose.insertNode((*ni)->getNdata());
+					}
+					for(ni=nodes.begin();ni!=nodes.end();++ni){
+						for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+							transpose.insertEdge(
+							(*ei)->getEdata(),
+							distance(nodes.begin(), find(nodes.begin(), nodes.end(), (*ei)->nodes[1])),
+							distance(nodes.begin(), find(nodes.begin(), nodes.end(), *ni))
+							);
+						}
+					}
+					return transpose;
+				}
 
         void print(){
             for (ni=nodes.begin();ni!=nodes.end();++ni){
