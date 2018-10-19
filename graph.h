@@ -53,7 +53,7 @@ class Graph {
 							insertNode(nombre,x,y);
 					}
 					while(infile >> peso >> nodo1 >> nodo2 >> direccion){
-						if(nodo1 < numNodos || nodo2 < numNodos)
+						if(nodo1 < numNodos || nodo2 < numNodos || nodo1 == nodo2)
 								insertEdge(peso,nodo1,nodo2,direccion);
 					}
 					// TODO
@@ -71,12 +71,7 @@ class Graph {
         }
 
         void insertEdge(int peso, int node1, int node2, bool dir){
-/*					for(auto ed: nodes[node1]->edges){
-						if(ed->getSecondPointer() == nodes[node2] || ed -> getFirstPointer() == nodes[node1]){
-							return;
-						}
-					}
-*/					//posicion que quieres conectar
+					//posicion que quieres conectar
 	          edge* NewEdge1 = new edge(peso, nodes[node1], nodes[node2], dir); //este nodes es de edge
 	          nodes[node1] -> edges.push_back(NewEdge1);
 						cantidadAristas++;
@@ -86,7 +81,28 @@ class Graph {
 						}
         }
 
-        void removeNode(){}
+        void removeNode(node* ni){
+					for(auto nodos:nodes){
+						if(nodos = ni){
+							while(nodos->EdgeSize()>0){
+								removeEdge(nodos);
+							}
+						}
+					}
+
+				}
+
+				void removeEdge(node* node1, node* node2){
+						for(auto ei:node1->edges){
+							if(ei->getSecondPointer() == node2){
+								node1->edges.erase(ei);
+								node2->edges.erase(ei);
+							}
+						}
+						delete ei;
+				}
+
+
 
 				void setAllNotVisited(){
 					for(auto item: nodes){
@@ -112,10 +128,10 @@ class Graph {
 											cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
 											(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
 										}
-										EdgeMap.erase(EdgeMap.begin());
-										visitedNodes ++;
-								}
-		        }
+									EdgeMap.erase(EdgeMap.begin());
+									visitedNodes ++;
+						}
+		    }
 
 				void kruskal(){
 					setAllNotVisited();
