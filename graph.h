@@ -36,8 +36,6 @@ class Graph {
         typedef typename EdgeSeq::iterator EdgeIte;
 
     private:
-				int cantidadNodos;
-				int cantidadAristas;
         NodeSeq nodes;
         NodeIte ni;
         EdgeIte ei;
@@ -45,6 +43,8 @@ class Graph {
 
 
     public:
+        Graph(){}
+
         Graph(bool dir, string file):nodes(0), dir(dir){
 					ifstream infile(file);
 					int numNodos,nodo1,nodo2,direccion,peso;
@@ -55,9 +55,9 @@ class Graph {
 							infile >> nombre >> x >> y;
 							insertNode(nombre,x,y);
 					}
-					while(infile >> peso >> nodo1 >> nodo2 >> direccion){
-						if(nodo1 < numNodos || nodo2 < numNodos || nodo1 == nodo2)
-								insertEdge(peso,nodo1,nodo2,direccion);
+					while(infile >> peso >> nodo1 >> nodo2){
+						if(nodo1 < nodes.size() && nodo2 < nodes.size() || nodo1 == nodo2)
+								insertEdge(peso,nodo1,nodo2);
 					}
 					// TODO
 				}
@@ -65,27 +65,13 @@ class Graph {
         void insertNode(N value, double x,double y){
           for(int i=0; i < nodes.size(); i++){ //este nodes es de NodeSeq
               if(value == nodes[i]->getNdata()){
-									return;
+                  return;
               }
           }
           node* NewNodo = new node(value,x,y);
           nodes.push_back(NewNodo);
-					cantidadNodos++;
         }
 
-
-
-        void insertNode(N value){
-
-          for(ni=nodes.begin(); ni != nodes.end(); ni++){ //este nodes es de NodeSeq
-              if(value==(*ni)->getNdata()){
-                  throw "Ya existe un nodo con el mismo nombre";
-              }
-          }
-
-					node* NewNodo = new node(value);
-					nodes.push_back(NewNodo);
-				}
 
         void insertEdge(E peso, int node1, int node2){ //posicion que quieres conectar
             //Cambiar de posicion a char
@@ -345,25 +331,25 @@ class Graph {
 				void prim(){
 					setAllNotVisited();
 					multimap<E,edge*> EdgeMap;
-					int visitedNodes = 1;
+					int visitedNodes = 0;
 					auto ni = nodes[0];
 					cout << "PRIM: ";
-					while(visitedNodes <= cantidadNodos){
-								for(auto ei:ni->edges){
-										if(!ei->getSecondPointer()->isVisited()){
-														EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
-													(*EdgeMap.begin()).second->getFirstPointer()->setVisited();
-											}
-										}
-										ni = (*EdgeMap.begin()).second->getSecondPointer();
-										if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
-											cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
-											(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
-										}
-									EdgeMap.erase(EdgeMap.begin());
-									visitedNodes ++;
+					while(visitedNodes < nodes.size()){
+						visitedNodes ++;
+						for(auto ei:ni->edges){
+							if(!ei->getSecondPointer()->isVisited()){
+									EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+							}
 						}
-		    }
+                        (*EdgeMap.begin()).second->getFirstPointer()->setVisited();
+						if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
+                            ni = (*EdgeMap.begin()).second->getSecondPointer();
+                            cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
+							(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
+						}
+						EdgeMap.erase(EdgeMap.begin());
+					}
+		    	}
 
 				void kruskal(){
 					setAllNotVisited();

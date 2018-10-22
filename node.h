@@ -11,18 +11,12 @@ class Node {
 
         EdgeSeq edges; //lista de adyacencia, list de edges
 
-<<<<<<< HEAD
-        Node(N value):data(value){}
-=======
-        Node(N value,double x, double y):data(value),x(0),y(0),visited(false){}
->>>>>>> prim
+        Node(N value,double x, double y):data(value),x(x),y(y),visited(false){}
 
         N getNdata(){
           return data;
         }
 
-<<<<<<< HEAD
-=======
         int EdgeSize(){
           return edges.size();
         }
@@ -42,16 +36,13 @@ class Node {
         void setNotVisited(){
           visited = false;
         }
->>>>>>> prim
+
 
     private:
         N data; //Tipo de dato N del trait
         double x; //solo para graficar en librerias como blue
         double y; //solo para graficar en librerias como blue
-<<<<<<< HEAD
-=======
         bool visited;
->>>>>>> prim
 };
 
 #endif
