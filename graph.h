@@ -47,7 +47,7 @@ class Graph {
 
         Graph(bool dir, string file):nodes(0), dir(dir){
 					ifstream infile(file);
-					int numNodos,nodo1,nodo2,direccion,peso;
+					int numNodos,nodo1,nodo2,peso;
 					char nombre;
 					double x,y;
 					infile >> numNodos;
@@ -59,11 +59,10 @@ class Graph {
 						if(nodo1 < nodes.size() && nodo2 < nodes.size() || nodo1 == nodo2)
 								insertEdge(peso,nodo1,nodo2);
 					}
-					// TODO
 				}
-
+//---------------------INSERT AND REMOVE--------------------------------
         void insertNode(N value, double x,double y){
-          for(int i=0; i < nodes.size(); i++){ //este nodes es de NodeSeq
+          for(int i=0; i < nodes.size(); i++){
               if(value == nodes[i]->getNdata()){
                   return;
               }
@@ -128,7 +127,7 @@ class Graph {
             }
 	        }
         }
-
+//-----------------------FINDS---------------------
 				bool findNode(N node){
 					for(ni = nodes.begin(); ni != nodes.end(); ni++){
 						if((*ni)->getNdata() == node){
@@ -152,7 +151,7 @@ class Graph {
 					}
 					return false;
 				}
-
+//----------------------DENSIDAD------------------------------
         bool Densidad(float cota){
 
             float sizeNodes = nodes.size();
@@ -172,7 +171,7 @@ class Graph {
                 return false;
             }
         }
-
+//--------------------GRADO Y TIPO---------------------------------
 				void findGrado(N value){
 
 					if(dir==false){
@@ -218,7 +217,7 @@ class Graph {
 					}
 
 				}
-
+//--------------------------BFS Y DFS-----------------------------
 				void BFS(N startN){
 					queue<N> myqueue;
 					vector<N> visited;
@@ -292,69 +291,97 @@ class Graph {
 					visited.push_back(startN);
 
 					while(!mystack.empty()){
-						N current = mystack.top();
 						for(ni=nodes.begin();ni!=nodes.end();++ni){
-							if(((*ni)->getNdata())==current){
+							bool t=false;
+							if(!mystack.empty() && ((*ni)->getNdata())==mystack.top()){ //si el nodo es el primero en el stack
 								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
 									if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //if *ei not in visited
+										t=true;
 										mystack.push((*ei)->nodes[1]->getNdata());
 										visited.push_back((*ei)->nodes[1]->getNdata());
 										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
 										break;
 									}
-									else{
-										mystack.pop();
-									}
 								}
+								if(t!=true){mystack.pop();}
 							}
 						}
-
 					}
 
 					//si dfs ha visitado todos los nodos
-					if(visited.size() == nodes.size()){fc = true;}
-					else{fc=false;}
+					fc = visited.size() == nodes.size();
+				}
+//-------------------------CONEXO------------------------------
+				bool conexo(){
+					bool conexo = false;
+					for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+					 	cout << (*ni) << " ";
+						DFS('A', conexo);
+					// 	if(conexo==false){return false;}
+					}
+					DFS('A', conexo);
+					DFS('B', conexo);
+					DFS('C', conexo);
+					DFS('D', conexo);
+					DFS('A', conexo);
+					cout << *nodes.begin();
+					//DFS(nodes.begin() -> getNdata(), conexo);
+					if (conexo == false){
+						return false;
+					}
+
+					return true;
 				}
 
-				bool stronglyConnected(N startN){
-
-					if(dir){
-						bool fc;
-
-						DFS(startN, fc);
-						if(fc==false){return false;}
-						else{
-
-							getTranspose().DFS(startN, fc);
-							if(fc==false){return false;}
-							else{return true;}
-
-						}
-
-					}
-					else{
-						throw "Only works for directed graphs";
-					}
-
-				}
-
-				self getTranspose(){
-					self transpose(dir);
-					for(ni=nodes.begin();ni!=nodes.end();++ni){
-						transpose.insertNode((*ni)->getNdata());
-					}
-					for(ni=nodes.begin();ni!=nodes.end();++ni){
-						for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
-							transpose.insertEdge(
-							(*ei)->getEdata(),
-							distance(nodes.begin(), find(nodes.begin(), nodes.end(), (*ei)->nodes[1])),
-							distance(nodes.begin(), find(nodes.begin(), nodes.end(), *ni))
-							);
+				void algo(){
+					bool a;
+					for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+						if((*ni)->getNdata()=='B'){
+							DFS((*ni)->getNdata(), a);
+							cout <<"Hola";
 						}
 					}
-					return transpose;
 				}
-
+//--------------------FUERTEMENTE CONEXO------------------------
+				// bool stronglyConnected(N startN){
+				//
+				// 	if(dir){
+				// 		bool fc;
+				//
+				// 		DFS(startN, fc);
+				// 		if(fc==false){return false;}
+				// 		else{
+				//
+				// 			getTranspose().DFS(startN, fc);
+				// 			if(fc==false){return false;}
+				// 			else{return true;}
+				//
+				// 		}
+				//
+				// 	}
+				// 	else{
+				// 		throw "Only works for directed graphs";
+				// 	}
+				//
+				// }
+				//
+				// self getTranspose(){
+				// 	self transpose(dir, file);
+				// 	for(ni=nodes.begin();ni!=nodes.end();++ni){
+				// 		transpose.insertNode((*ni)->getNdata());
+				// 	}
+				// 	for(ni=nodes.begin();ni!=nodes.end();++ni){
+				// 		for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+				// 			transpose.insertEdge(
+				// 			(*ei)->getEdata(),
+				// 			distance(nodes.begin(), find(nodes.begin(), nodes.end(), (*ei)->nodes[1])),
+				// 			distance(nodes.begin(), find(nodes.begin(), nodes.end(), *ni))
+				// 			);
+				// 		}
+				// 	}
+				// 	return transpose;
+				// }
+//---------------------------PRIM-------------------------------
 				void setAllNotVisited(){
 					for(auto item: nodes){
 						item->setNotVisited();
@@ -367,6 +394,7 @@ class Graph {
 					int visitedNodes = 0;
 					auto ni = nodes[0];
 					cout << "PRIM: ";
+
 					while(visitedNodes < nodes.size()){
 						visitedNodes ++;
 						for(auto ei:ni->edges){
@@ -383,7 +411,7 @@ class Graph {
 						EdgeMap.erase(EdgeMap.begin());
 					}
 		    	}
-
+//----------------------KRUSKAL----------------------------------
 				void kruskal(){
 					setAllNotVisited();
 					multimap<E,edge*> EdgeMap;
@@ -410,7 +438,7 @@ class Graph {
             for(auto ni: nodes){
                 cout << ni->getNdata() << "| ";
                 for(auto item: ni->edges){
-                    cout << item->getSecondPointer()->getNdata() <<":"<<item->getEdata()<<' ';
+                    cout << item->nodes[1]->getNdata() <<":"<<item->getEdata()<<' ';
                 }
                     cout << endl;
             }

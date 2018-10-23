@@ -9,8 +9,14 @@ int main(int argc, char *argv[]) {
 
 	graph G(0,"graph_construct.txt");
 	G.print();
-	G.prim();
-	G.kruskal();
+	// cout << "H";
+	bool d;
+	//G.DFS('A');
+
+	// //G.algo();
+	// cout << G.conexo();
+	// //cout << d;
+
 
 	return 0;
 }
