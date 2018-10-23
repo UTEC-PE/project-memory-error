@@ -251,6 +251,39 @@ class Graph {
 					}
 				}
 
+				bool bipartite(N startN){ //only works for strongly connected
+
+					queue<N> myqueue;
+					vector<N> visited;
+
+					myqueue.push(startN);
+					visited.push_back(startN);
+
+					int lvl=1;
+					bool lvlh=false;
+
+					while(!myqueue.empty()){
+
+						N current = myqueue.front();
+						for(ni=nodes.begin();ni!=nodes.end();++ni){
+							if(((*ni)->getNdata())==current){
+								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+									if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //If edge not in visited
+										myqueue.push((*ei)->nodes[1]->getNdata());
+										visited.push_back((*ei)->nodes[1]->getNdata());
+										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
+										lvlh=true;
+									}
+								}
+								lvl+=lvlh;
+								lvlh=false;
+								myqueue.pop();
+							}
+						}
+
+					}
+				}
+
 				void DFS(N startN, bool &fc){
 					stack<N> mystack;
 					vector<N> visited;
