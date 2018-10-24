@@ -10,11 +10,20 @@ class Node {
         typedef typename G::EdgeSeq EdgeSeq;
 
         EdgeSeq edges; //lista de adyacencia, list de edges
+        Node* parent;
 
-        Node(N value,double x, double y):data(value),x(x),y(y),visited(false){}
+        Node(N value,double x, double y):data(value),x(x),y(y),visited(false),parent(this){}
 
         N getNdata(){
           return data;
+        }
+
+        double getXdata(){
+          return x;
+        }
+
+        double getYdata(){
+          return y;
         }
 
         int EdgeSize(){
