@@ -49,5 +49,3 @@ int main(int argc, char *argv[]) {
 	kruskal.print();
 	return 0;
 }
-
-//a la hora de usar kruskal que no chanque al grafo

@@ -72,9 +72,6 @@ class Graph {
 					nodes.push_back(NewNodo);
 				}
 
-
-				void insertEdge(E peso, N node1, N node2){ //posicion que quieres conectar
-
         void insertEdge(E peso, N node1, N node2){ //posicion que quieres conectar
             //Cambiar de posicion a char
 						node* nodoinsert1 = findNode(node1);
@@ -275,40 +272,55 @@ class Graph {
 					cout << endl;
 				}
 //--------------------------BIPARTITO-----------------------------
-				void bipartite(){ //only works for strongly connected
+				bool bipartite(){ //only works for strongly connected
 
-					queue<N> myqueue;
-					vector<int> colorred;
-					vector<int> colorblue;
+				queue<N> myqueue;
+				vector<N> colorred;
+				vector<N> colorblue;
 
-					N startN = nodes.front()->getNdata();
+				N startN = nodes.front()->getNdata();
 
-					myqueue.push(startN);
-					colorred.push_back(startN);
+				myqueue.push(startN);
+				colorred.push_back(startN);
 
-					while(!myqueue.empty()){
+				while(!myqueue.empty()){
 
-						N current = myqueue.front();
-						for(ni=nodes.begin();ni!=nodes.end();++ni){
-							if(((*ni)->getNdata())==current){
-								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
-									if((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
-									(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false){ //If current is in red AND the edge is not in the vector
-										myqueue.push((*ei)->nodes[1]->getNdata());
-										colorblue.push_back((*ei)->nodes[1]->getNdata());
-										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
-									}
-									else if((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
-									(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false){ //if current is in blue AND the edge is not in vector
-										myqueue.push((*ei)->nodes[1]->getNdata());
-										colorred.push_back((*ei)->nodes[1]->getNdata());
-									}
+					N current = myqueue.front();
+					for(ni=nodes.begin();ni!=nodes.end();++ni){
+						if(((*ni)->getNdata())==current){
+							for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+								if((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
+								(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false &&
+								(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false){
+									//If current is in red AND the edge is not in red AND the edge not blue
+									myqueue.push((*ei)->nodes[1]->getNdata());
+									colorblue.push_back((*ei)->nodes[1]->getNdata());
 								}
-								myqueue.pop();
+								else if((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
+								(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false &&
+								(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false){
+									//if current is in blue AND the edge is not in blue AND the edge not red
+									myqueue.push((*ei)->nodes[1]->getNdata());
+									colorred.push_back((*ei)->nodes[1]->getNdata());
+								}
+								else if(((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
+								(find(colorred.begin(), colorred.end(), (*ei)->nodes[1]->getNdata()) != colorred.end()) == true) ||
+								((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
+								(find(colorblue.begin(), colorblue.end(), (*ei)->nodes[1]->getNdata()) != colorblue.end()) == true)){
+								//If current is in red/blue AND edge is in red/blue
+								return false;
+								}
 							}
+							myqueue.pop();
 						}
 					}
+				}
 
+				for (typename vector<N>::iterator i = colorred.begin(); i != colorred.end(); ++i) cout << *i << ' ';
+				cout << endl;
+				for (typename vector<N>::iterator i = colorblue.begin(); i != colorblue.end(); ++i) cout << *i << ' ';
+
+				return true;
 				}
 //--------------------------DFS-----------------------------
 				void DFS(N startN, bool &fc){
@@ -345,30 +357,10 @@ class Graph {
 					for(ni=nodes.begin(); ni!=nodes.end(); ni++){
 					 	cout << (*ni) << " ";
 						DFS('A', conexo);
-					// 	if(conexo==false){return false;}
-					}
-					DFS('A', conexo);
-					DFS('B', conexo);
-					DFS('C', conexo);
-					DFS('D', conexo);
-					DFS('A', conexo);
-					cout << *nodes.begin();
-					//DFS(nodes.begin() -> getNdata(), conexo);
-					if (conexo == false){
-						return false;
+						if(conexo==false){return false;}
 					}
 
 					return true;
-				}
-
-				void algo(){
-					bool a;
-					for(ni=nodes.begin(); ni!=nodes.end(); ni++){
-						if((*ni)->getNdata()=='B'){
-							DFS((*ni)->getNdata(), a);
-							cout <<"Hola";
-						}
-					}
 				}
 //--------------------FUERTEMENTE CONEXO------------------------
 				// bool stronglyConnected(N startN){
