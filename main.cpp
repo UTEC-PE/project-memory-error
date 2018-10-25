@@ -7,7 +7,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-
 	graph G(0,"graph_construct.txt");
 
 
@@ -38,22 +37,16 @@ int main(int argc, char *argv[]) {
 	// G.insertEdge(4, 4, 6);
 
 	G.print();
-
-	//G.BFS('A');
-
-	//G.bipartite();
-	// cout << G.conexo();
-	/*
-
-	vector<int> myvec;
-	myvec.push_back(3);
-	myvec.push_back(4);
-	myvec.push_back(5);
-
-	if (find(myvec.begin(), myvec.end(), 3)!=myvec.end()) cout << "\nfound\n";
-	else cout << "\nnot found\n";
-		*/
-
+	G.BFS('D');
+	G.findGrado('A');
+	if(G.Densidad(0.5))
+		cout << "EL GRAFO ES DENSO"<< endl;
+	else
+		cout << "EL GRAFO NO ES DENSO" << endl;
+	graph prim = G.prim('A');
+	prim.print();
+	graph kruskal = G.kruskal();
+	kruskal.print();
 	return 0;
 }
 
