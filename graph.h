@@ -10,7 +10,7 @@
 #include <map>
 #include <queue>
 #include <stack>
-
+#include <algorithm>
 #include "node.h"
 #include "edge.h"
 
@@ -18,7 +18,7 @@ using namespace std;
 
 class Traits {
 	public:
-		typedef char N; //Node es de tipo char
+		typedef int N; //Node es de tipo char
 		typedef int E; //Edge es de tipo int
 };
 
@@ -43,12 +43,12 @@ class Graph {
 
 
     public:
-        Graph(){}
+        Graph(bool dir):dir(dir){}
 
-        Graph(bool dir, string file):nodes(0), dir(dir){
+				Graph(bool dir, string file):nodes(0), dir(dir){
 					ifstream infile(file);
-					int numNodos,nodo1,nodo2,peso;
-					char nombre;
+					int numNodos,peso;
+					N nombre,nodo1,nodo2;
 					double x,y;
 					infile >> numNodos;
 					for(int i = 0;i < numNodos ; i++){
@@ -56,31 +56,34 @@ class Graph {
 							insertNode(nombre,x,y);
 					}
 					while(infile >> peso >> nodo1 >> nodo2){
-						if(nodo1 < nodes.size() && nodo2 < nodes.size() || nodo1 == nodo2)
+						if(nodo1 != nodo2)
 								insertEdge(peso,nodo1,nodo2);
 					}
+					// TODO
 				}
 //---------------------INSERT AND REMOVE--------------------------------
-        void insertNode(N value, double x,double y){
-          for(int i=0; i < nodes.size(); i++){
-              if(value == nodes[i]->getNdata()){
-                  return;
-              }
-          }
-          node* NewNodo = new node(value,x,y);
-          nodes.push_back(NewNodo);
-        }
+				void insertNode(N value, double x,double y){
+					for(int i=0; i < nodes.size(); i++){ //este nodes es de NodeSeq
+							if(value == nodes[i]->getNdata()){
+									return;
+							}
+					}
+					node* NewNodo = new node(value,x,y);
+					nodes.push_back(NewNodo);
+				}
 
 
-        void insertEdge(E peso, int node1, int node2){ //posicion que quieres conectar
-            //Cambiar de posicion a char
+				void insertEdge(E peso, N node1, N node2){ //posicion que quieres conectar
 
-            edge* NewEdge1 = new edge(peso, nodes[node1], nodes[node2]);
-            nodes[node1] -> edges.push_back(NewEdge1);
+						node* nodoinsert1 = findNode(node1);
+						node* nodoinsert2 = findNode(node2);
+
+            edge* NewEdge1 = new edge(peso, nodoinsert1, nodoinsert2);
+            nodoinsert1 -> edges.push_back(NewEdge1);
 
             if(dir==false){
-                edge* NewEdge2 = new edge(peso, nodes[node2], nodes[node1]);
-                nodes[node2] -> edges.push_back(NewEdge2);
+                edge* NewEdge2 = new edge(peso, nodoinsert2, nodoinsert1);
+                nodoinsert2 -> edges.push_back(NewEdge2);
             }
 
         }
@@ -128,14 +131,14 @@ class Graph {
 	        }
         }
 //-----------------------FINDS---------------------
-				bool findNode(N node){
+				node* findNode(N node){
 					for(ni = nodes.begin(); ni != nodes.end(); ni++){
 						if((*ni)->getNdata() == node){
-							return true;
+							return (*ni);
 							break;
 						}
 					}
-					return false;
+					return nullptr;
 				}
 
 				bool findEdge(N node1, N node2){
@@ -217,7 +220,7 @@ class Graph {
 					}
 
 				}
-//--------------------------BFS Y DFS-----------------------------
+//--------------------------BFS-----------------------------
 				void BFS(N startN){
 					queue<N> myqueue;
 					vector<N> visited;
@@ -249,17 +252,17 @@ class Graph {
 
 					}
 				}
-
-				bool bipartite(N startN){ //only works for strongly connected
+//--------------------------BIPARTITO-----------------------------
+				void bipartite(){ //only works for strongly connected
 
 					queue<N> myqueue;
-					vector<N> visited;
+					vector<int> colorred;
+					vector<int> colorblue;
+
+					N startN = nodes.front()->getNdata();
 
 					myqueue.push(startN);
-					visited.push_back(startN);
-
-					int lvl=1;
-					bool lvlh=false;
+					colorred.push_back(startN);
 
 					while(!myqueue.empty()){
 
@@ -267,22 +270,25 @@ class Graph {
 						for(ni=nodes.begin();ni!=nodes.end();++ni){
 							if(((*ni)->getNdata())==current){
 								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
-									if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //If edge not in visited
+									if((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
+									(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false){ //If current is in red AND the edge is not in the vector
 										myqueue.push((*ei)->nodes[1]->getNdata());
-										visited.push_back((*ei)->nodes[1]->getNdata());
+										colorblue.push_back((*ei)->nodes[1]->getNdata());
 										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
-										lvlh=true;
+									}
+									else if((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
+									(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false){ //if current is in blue AND the edge is not in vector
+										myqueue.push((*ei)->nodes[1]->getNdata());
+										colorred.push_back((*ei)->nodes[1]->getNdata());
 									}
 								}
-								lvl+=lvlh;
-								lvlh=false;
 								myqueue.pop();
 							}
 						}
-
 					}
-				}
 
+				}
+//--------------------------DFS-----------------------------
 				void DFS(N startN, bool &fc){
 					stack<N> mystack;
 					vector<N> visited;
@@ -435,6 +441,7 @@ class Graph {
         }
 
         void print(){
+						if (!nodes.size()) {cout<<"No hay nodos\n"; return;}
             for(auto ni: nodes){
                 cout << ni->getNdata() << "| ";
                 for(auto item: ni->edges){
