@@ -6,18 +6,18 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-	graph G(0,"graph_construct.txt");
+	graph G(0,"graph_construct3.txt");
 	G.print();
-	G.BFS('D');
-	G.findGrado('A');
-	if(G.Densidad(0.5))
-		cout << "EL GRAFO ES DENSO"<< endl;
-	else
-		cout << "EL GRAFO NO ES DENSO" << endl;
-	graph prim = G.prim('A');
-	prim.print();
-	graph kruskal = G.kruskal();
-	kruskal.print();
+	cout << endl;
+	bool f;
+	G.DFS('G',f);
+	cout << endl;
+	G.BFS('G');
+	cout << endl;
+	cout << G.Densidad(0.6) << endl;
+	cout << G.bipartite() << endl;
+	G.prim('A');
+	G.kruskal();
 	return 0;
 }
 
