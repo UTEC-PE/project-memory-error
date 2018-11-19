@@ -191,7 +191,7 @@ class Graph {
             }
         }
 
-				void findGrado(N value){
+				void getGrado(N value){
 
 					if(dir==false){
 
@@ -472,7 +472,78 @@ class Graph {
 				return GrafoKruskal;
 			}
 		}
-		
+
+		void Floyd_Warshall(){
+			int inf=99;
+			int size=nodes.size();
+			int dist[size][size];
+			N steps[size][size];
+			map<N, int> node_pos;
+			map<int, N> pos_node;
+			int count=0;
+
+			for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //crea mapa
+				node_pos.insert(pair<N, int>((*ni)->getNdata(), count));
+				pos_node.insert(pair<int, N>(count, (*ni)->getNdata()));
+				count+=1;
+			}
+
+			count=0; //inicializa steps
+			for(auto node: nodes){
+				for(int i=0; i<size; i++){
+					steps[i][count]=node->getNdata();
+				}
+				count+=1;
+			}
+
+			for(int i=0; i<size; i++){ //inicializa con infinito
+				for(int j=0; j<size; j++){
+					dist[i][j]=inf;
+				}
+			}
+
+			for(int i=0; i<size; i++){ //diagonal con 0
+				dist[i][i]=0;
+			}
+
+			for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //pesos
+				for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+					dist[node_pos.find((*ni)->getNdata())->second][node_pos.find((*ei)->nodes[1]->getNdata())->second]=(*ei)->getEdata();
+				}
+			}
+
+			for(int k=0; k<size; k++){
+				for(int i=0; i<size; i++){
+					for(int j=0; j<size; j++){
+						if(dist[i][j] > dist[i][k]+ dist[k][j]){
+							dist[i][j] = dist[i][k]+dist[k][j];
+							steps[i][j] = pos_node.find(k)->second;
+						}
+					}
+				}
+			}
+
+			cout << "distancia:";
+			cout << endl;
+			for(int i=0; i<size; i++){
+				for(int j=0; j<size; j++){
+					cout << dist[i][j] << " ";
+				}
+				cout << endl;
+			}
+
+			cout << endl;
+
+			cout << "steps:";
+			cout << endl;
+			for(int i=0; i<size; i++){
+				for(int j=0; j<size; j++){
+					cout << steps[i][j] << " ";
+				}
+				cout << endl;
+			}
+		}
+
     void print(){
         for(auto ni: nodes){
             cout << ni->getNdata() << "| ";
