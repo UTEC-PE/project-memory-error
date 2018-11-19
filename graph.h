@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <vector>
+#include <algorithm>
 #include <list>
 #include <iostream>
 #include <string>
@@ -44,8 +45,7 @@ class Graph {
 
     public:
         Graph(bool dir):dir(dir){}
-
-				Graph(bool dir, string file):nodes(0), dir(dir){
+        Graph(bool dir, string file):nodes(0), dir(dir){
 					ifstream infile(file);
 					int numNodos,peso;
 					N nombre,nodo1,nodo2;
@@ -57,11 +57,11 @@ class Graph {
 					}
 					while(infile >> peso >> nodo1 >> nodo2){
 						if(nodo1 != nodo2)
-								insertEdge(peso,nodo1,nodo2);
+							insertEdge(peso,nodo1,nodo2);
 					}
 					// TODO
 				}
-//---------------------INSERT AND REMOVE--------------------------------
+
 				void insertNode(N value, double x,double y){
 					for(int i=0; i < nodes.size(); i++){ //este nodes es de NodeSeq
 							if(value == nodes[i]->getNdata()){
@@ -72,9 +72,8 @@ class Graph {
 					nodes.push_back(NewNodo);
 				}
 
-
-				void insertEdge(E peso, N node1, N node2){ //posicion que quieres conectar
-
+        void insertEdge(E peso, N node1, N node2){ //posicion que quieres conectar
+            //Cambiar de posicion a char
 						node* nodoinsert1 = findNode(node1);
 						node* nodoinsert2 = findNode(node2);
 
@@ -88,7 +87,7 @@ class Graph {
 
         }
 
-        void removeEdge(N node1, N node2){ //node1->node2 if dir=true
+        void removeEdge(N node1, N node2){
 
             for(ni = nodes.begin(); ni != nodes.end(); ni++){
                 if((*ni)->getNdata() == node1){
@@ -115,22 +114,20 @@ class Graph {
         }
 
         void removeNode(N value){
-
-	        for(ni = nodes.begin(); ni != nodes.end(); ni++){
-            if((*ni)->getNdata()==value){
-                (*ni)->edges.clear(); //borra toda la lista adjacente
-                nodes.erase(ni); //borra nodo del vector nodes
-								break;
-            }
-            for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
-                if((*ei)->nodes[1]->getNdata()==value){
-                    (*ni)->edges.remove(*ei);
-										break;
+            int cont = 0;
+            for(auto ni: nodes) {
+                cont ++;
+                if(ni->getNdata()== value) {
+                    while (ni->edges.size() > 0) {
+                        ei = ni->edges.begin();
+                        removeEdge((*ei)->getFirstPointer()->getNdata(), (*ei)->getSecondPointer()->getNdata());
+                    }
+                    nodes.erase(nodes.begin()+(cont-1));
+                    break;
                 }
             }
-	        }
         }
-//-----------------------FINDS---------------------
+
 				node* findNode(N node){
 					for(ni = nodes.begin(); ni != nodes.end(); ni++){
 						if((*ni)->getNdata() == node){
@@ -154,7 +151,25 @@ class Graph {
 					}
 					return false;
 				}
-//----------------------DENSIDAD------------------------------
+
+				node* findParent(node* ni){
+					node* current = ni;
+					while(current -> parent != current){
+						current = current -> parent;
+					}
+					return current;
+				}
+
+				bool unionParent(node* ni1,node* ni2){
+					node* parent1 = findParent(ni1);
+					node* parent2 = findParent(ni2);
+					if(parent1 != parent2){
+						parent2->parent = parent1;
+						return true;
+					}
+					return false;
+				}
+
         bool Densidad(float cota){
 
             float sizeNodes = nodes.size();
@@ -174,14 +189,14 @@ class Graph {
                 return false;
             }
         }
-//--------------------GRADO Y TIPO---------------------------------
-				void findGrado(N value){
+
+				void getGrado(N value){
 
 					if(dir==false){
 
 						for(ni=nodes.begin(); ni!=nodes.end(); ni++){
 							if((*ni)->getNdata() == value){
-								cout << "Grado total para no direccionado: " << (*ni)->edges.size() << endl;
+								cout << "Grado total para vertice "<<value<< " no direccionado: " << (*ni)->edges.size() << endl;
 							}
 						}
 
@@ -206,9 +221,9 @@ class Graph {
 							}
 						}
 
-						cout << "Grado total para direccionado: " << gtotal << endl;
-						cout << "Grado de salida para direccionado: " << gsalida << endl;
-						cout << "Grado de entrada para direccionado: " << gentrada << endl;
+						cout << "Grado total para vertice "<<value << " direccionado: " << gtotal << endl;
+						cout << "Grado de salida para vertice "<<value<<" direccionado: " << gsalida << endl;
+						cout << "Grado de entrada para vertice "<<value<<" direccionado: " << gentrada << endl;
 
 						if(gsalida==0){
 							cout << value << " es un nodo hundido" << endl;
@@ -220,78 +235,56 @@ class Graph {
 					}
 
 				}
-//--------------------------BFS-----------------------------
-				void BFS(N startN){
-					queue<N> myqueue;
-					vector<N> visited;
 
-					myqueue.push(startN);
-					visited.push_back(startN);
+				bool conexo(){
+					bool conexo = false;
+					for(auto ni: nodes){
+						DFS(ni->getNdata(), conexo);
+						if(conexo==false){return false;}
+					}
+					return true;
+				}
 
-					int lvl=1;
-					bool lvlh=false;
+				vector<pair<N,N>> BFS(N startN){
+						queue<N> myqueue;
+						vector<N> visited;
+						vector<pair<N,N>> bfs;
 
-					while(!myqueue.empty()){
+						myqueue.push(startN);
+						visited.push_back(startN);
 
-						N current = myqueue.front();
-						for(ni=nodes.begin();ni!=nodes.end();++ni){
-							if(((*ni)->getNdata())==current){
-								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
-									if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //If edge not in visited
-										myqueue.push((*ei)->nodes[1]->getNdata());
-										visited.push_back((*ei)->nodes[1]->getNdata());
-										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
-										lvlh=true;
+						int lvl=1;
+						bool lvlh=false;
+
+						while(!myqueue.empty()){
+							N current = myqueue.front();
+							for(ni=nodes.begin();ni!=nodes.end();++ni){
+								if(((*ni)->getNdata())==current){
+									for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+										if((find(visited.begin(), visited.end(),(*ei)->nodes[1]->getNdata()) != visited.end()) == false){ //If edge not in visited
+											myqueue.push((*ei)->nodes[1]->getNdata());
+											visited.push_back((*ei)->nodes[1]->getNdata());
+											bfs.push_back(make_pair((*ni)->getNdata(), (*ei)->nodes[1]->getNdata()));
+											lvlh=true;
+										}
 									}
+									lvl+=lvlh;
+									lvlh=false;
+									myqueue.pop();
 								}
-								lvl+=lvlh;
-								lvlh=false;
-								myqueue.pop();
 							}
 						}
-
-					}
-				}
-//--------------------------BIPARTITO-----------------------------
-				void bipartite(){ //only works for strongly connected
-
-					queue<N> myqueue;
-					vector<int> colorred;
-					vector<int> colorblue;
-
-					N startN = nodes.front()->getNdata();
-
-					myqueue.push(startN);
-					colorred.push_back(startN);
-
-					while(!myqueue.empty()){
-
-						N current = myqueue.front();
-						for(ni=nodes.begin();ni!=nodes.end();++ni){
-							if(((*ni)->getNdata())==current){
-								for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
-									if((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
-									(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false){ //If current is in red AND the edge is not in the vector
-										myqueue.push((*ei)->nodes[1]->getNdata());
-										colorblue.push_back((*ei)->nodes[1]->getNdata());
-										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
-									}
-									else if((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
-									(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false){ //if current is in blue AND the edge is not in vector
-										myqueue.push((*ei)->nodes[1]->getNdata());
-										colorred.push_back((*ei)->nodes[1]->getNdata());
-									}
-								}
-								myqueue.pop();
-							}
-						}
+						for (auto i = 0; i<bfs.size(); ++i){
+							 cout << bfs[i].first << " "
+										<< bfs[i].second << endl;
+					 	}
+						return bfs;
 					}
 
-				}
-//--------------------------DFS-----------------------------
-				void DFS(N startN, bool &fc){
+				vector<pair<N,N>> DFS(N startN, bool &fc){
 					stack<N> mystack;
 					vector<N> visited;
+					vector<pair<N,N>> dfs;
 
 					mystack.push(startN);
 					visited.push_back(startN);
@@ -305,7 +298,7 @@ class Graph {
 										t=true;
 										mystack.push((*ei)->nodes[1]->getNdata());
 										visited.push_back((*ei)->nodes[1]->getNdata());
-										cout << (*ni)->getNdata() << (*ei)->nodes[1]->getNdata() << " | ";
+										dfs.push_back(make_pair((*ni)->getNdata(), (*ei)->nodes[1]->getNdata()));
 										break;
 									}
 								}
@@ -316,140 +309,250 @@ class Graph {
 
 					//si dfs ha visitado todos los nodos
 					fc = visited.size() == nodes.size();
+
+					for (auto i = 0; i<dfs.size(); ++i){
+						 cout << dfs[i].first << " "
+									<< dfs[i].second << endl;
+				 	}
+
+					return dfs;
 				}
-//-------------------------CONEXO------------------------------
-				bool conexo(){
-					bool conexo = false;
-					for(ni=nodes.begin(); ni!=nodes.end(); ni++){
-					 	cout << (*ni) << " ";
-						DFS('A', conexo);
-					// 	if(conexo==false){return false;}
+
+				bool stronglyConnected(N startN){
+					if(dir){
+						bool fc;
+						DFS(startN, fc);
+						if(fc==false){return false;}
+						else{
+							getTranspose().DFS(startN, fc);
+							if(fc==false){return false;}
+							else{return true;}
+						}
 					}
-					DFS('A', conexo);
-					DFS('B', conexo);
-					DFS('C', conexo);
-					DFS('D', conexo);
-					DFS('A', conexo);
-					cout << *nodes.begin();
-					//DFS(nodes.begin() -> getNdata(), conexo);
-					if (conexo == false){
-						return false;
+					else{
+						cout << "Only works for directed graphs"<<endl;
 					}
 
 					return true;
 				}
 
-				void algo(){
-					bool a;
-					for(ni=nodes.begin(); ni!=nodes.end(); ni++){
-						if((*ni)->getNdata()=='B'){
-							DFS((*ni)->getNdata(), a);
-							cout <<"Hola";
-						}
-					}
-				}
-//--------------------FUERTEMENTE CONEXO------------------------
-				// bool stronglyConnected(N startN){
-				//
-				// 	if(dir){
-				// 		bool fc;
-				//
-				// 		DFS(startN, fc);
-				// 		if(fc==false){return false;}
-				// 		else{
-				//
-				// 			getTranspose().DFS(startN, fc);
-				// 			if(fc==false){return false;}
-				// 			else{return true;}
-				//
-				// 		}
-				//
-				// 	}
-				// 	else{
-				// 		throw "Only works for directed graphs";
-				// 	}
-				//
-				// }
-				//
-				// self getTranspose(){
-				// 	self transpose(dir, file);
-				// 	for(ni=nodes.begin();ni!=nodes.end();++ni){
-				// 		transpose.insertNode((*ni)->getNdata());
-				// 	}
-				// 	for(ni=nodes.begin();ni!=nodes.end();++ni){
-				// 		for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
-				// 			transpose.insertEdge(
-				// 			(*ei)->getEdata(),
-				// 			distance(nodes.begin(), find(nodes.begin(), nodes.end(), (*ei)->nodes[1])),
-				// 			distance(nodes.begin(), find(nodes.begin(), nodes.end(), *ni))
-				// 			);
-				// 		}
-				// 	}
-				// 	return transpose;
-				// }
-//---------------------------PRIM-------------------------------
-				void setAllNotVisited(){
-					for(auto item: nodes){
-						item->setNotVisited();
-					}
-				}
+				bool bipartite(){
 
-				void prim(){
-					setAllNotVisited();
-					multimap<E,edge*> EdgeMap;
-					int visitedNodes = 0;
-					auto ni = nodes[0];
-					cout << "PRIM: ";
+				queue<N> myqueue;
+				vector<N> colorred;
+				vector<N> colorblue;
 
-					while(visitedNodes < nodes.size()){
-						visitedNodes ++;
-						for(auto ei:ni->edges){
-							if(!ei->getSecondPointer()->isVisited()){
-									EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
-							}
-						}
-                        (*EdgeMap.begin()).second->getFirstPointer()->setVisited();
-						if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
-                            ni = (*EdgeMap.begin()).second->getSecondPointer();
-                            cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
-							(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
-						}
-						EdgeMap.erase(EdgeMap.begin());
-					}
-		    	}
-//----------------------KRUSKAL----------------------------------
-				void kruskal(){
-					setAllNotVisited();
-					multimap<E,edge*> EdgeMap;
-					for(auto ni:nodes){
-							for(auto ei:ni->edges){
-									if(!ei->getSecondPointer()->isVisited()){
-											EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
-											(*EdgeMap.begin()).second->getFirstPointer()->setVisited();
-										}
+				N startN = nodes.front()->getNdata();
+
+				myqueue.push(startN);
+				colorred.push_back(startN);
+
+				while(!myqueue.empty()){
+
+					N current = myqueue.front();
+					for(ni=nodes.begin();ni!=nodes.end();++ni){
+						if(((*ni)->getNdata())==current){
+							for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+								if((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
+								(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false &&
+								(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false){
+									//If current is in red AND the edge is not in red AND the edge not blue
+									myqueue.push((*ei)->nodes[1]->getNdata());
+									colorblue.push_back((*ei)->nodes[1]->getNdata());
 								}
+								else if((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
+								(find(colorblue.begin(), colorblue.end(),(*ei)->nodes[1]->getNdata()) != colorblue.end()) == false &&
+								(find(colorred.begin(), colorred.end(),(*ei)->nodes[1]->getNdata()) != colorred.end()) == false){
+									//if current is in blue AND the edge is not in blue AND the edge not red
+									myqueue.push((*ei)->nodes[1]->getNdata());
+									colorred.push_back((*ei)->nodes[1]->getNdata());
+								}
+								else if(((find(colorred.begin(), colorred.end(), current) != colorred.end()) == true &&
+								(find(colorred.begin(), colorred.end(), (*ei)->nodes[1]->getNdata()) != colorred.end()) == true) ||
+								((find(colorblue.begin(), colorblue.end(), current) != colorblue.end()) == true &&
+								(find(colorblue.begin(), colorblue.end(), (*ei)->nodes[1]->getNdata()) != colorblue.end()) == true)){
+								//If current is in red/blue AND edge is in red/blue
+								return false;
+								}
+							}
+							myqueue.pop();
 						}
-				cout << endl << "KRUSKAL: ";
-				while(EdgeMap.size() > 0){
-						if(!(*EdgeMap.begin()).second->getSecondPointer()->isVisited()){
-							cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
-							(*EdgeMap.begin()).second->getSecondPointer()->setVisited();
-						}
-						EdgeMap.erase(EdgeMap.begin());
 					}
-					cout << endl;
-        }
+				}
+                cout << endl;
+				for (typename vector<N>::iterator i = colorred.begin(); i != colorred.end(); ++i) cout << *i << ' ';
+				cout << endl;
+				for (typename vector<N>::iterator i = colorblue.begin(); i != colorblue.end(); ++i) cout << *i << ' ';
+				cout << endl;
 
-        void print(){
-						if (!nodes.size()) {cout<<"No hay nodos\n"; return;}
-            for(auto ni: nodes){
-                cout << ni->getNdata() << "| ";
-                for(auto item: ni->edges){
-                    cout << item->nodes[1]->getNdata() <<":"<<item->getEdata()<<' ';
-                }
-                    cout << endl;
+				return true;
+    }
+
+		self getTranspose(){
+				 	self transpose(dir);
+				 	for(ni=nodes.begin();ni!=nodes.end();++ni){
+				 		transpose.insertNode((*ni)->getNdata(),(*ni)->getXdata(),(*ni)->getYdata());
+				 	}
+				 	for(ni=nodes.begin();ni!=nodes.end();++ni){
+				 		for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+				 			transpose.insertEdge((*ei)->getEdata(), (*ei)->getSecondPointer()->getNdata(),(*ei)->getFirstPointer()->getNdata());
+				 		}
+				 	}
+				 	return transpose;
+				}
+
+		void setAllNotVisited(){
+			for(auto item: nodes){
+				item->setNotVisited();
+			}
+		}
+
+		Graph<Traits> prim(N vertice){
+      setAllNotVisited();
+			Graph<Traits> GrafoPrim(0);
+			if(!dir){
+				int visitedNodes = 1;
+				multimap<E,edge*> EdgeMap;
+				node* ni = findNode(vertice);
+				ni->setVisited();
+				for(auto ei:ni->edges){
+					EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+				}
+				cout << "PRIM: ";
+				while(visitedNodes != nodes.size()){
+					edge* BeginEdge = (*EdgeMap.begin()).second;
+					if(!BeginEdge->getSecondPointer()->isVisited()){
+                cout <<"{"<<BeginEdge->getFirstPointer()->getNdata() <<","<<BeginEdge->getSecondPointer()->getNdata()<<","<<BeginEdge->getEdata()<<"} ";
+                BeginEdge->getSecondPointer()->setVisited();
+								ni = BeginEdge->getSecondPointer();
+								GrafoPrim.insertNode(BeginEdge->getFirstPointer()->getNdata(),0,0);
+                GrafoPrim.insertNode(BeginEdge->getSecondPointer()->getNdata(),0,0);
+                GrafoPrim.insertEdge(BeginEdge->getEdata(),BeginEdge->getFirstPointer()->getNdata(),BeginEdge->getSecondPointer()->getNdata());
+						for(auto ei:ni->edges){
+                EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+						}
+            visitedNodes++;
+                      }else{
+                            EdgeMap.erase(EdgeMap.begin());
+                        }
+				}
+				cout<<endl;
+				return GrafoPrim;
+			}
+			else{
+				cout << "NO SE PUEDE HACER PRIM, EL GRAFO ES DIRIGIDO"<< endl;
+				return GrafoPrim;
+			}
+		}
+
+		Graph<Traits> kruskal(){
+			Graph<Traits> GrafoKruskal(0);
+			if(!dir){
+				multimap<E,edge*> EdgeMap;
+				for(auto ni:nodes){
+					for(auto ei:ni->edges){
+						EdgeMap.insert(pair<E,edge*>(ei->getEdata(),ei));
+					}
+				}
+				cout << "KRUSKAL: ";
+				while(EdgeMap.size()>0){
+					if(unionParent((*EdgeMap.begin()).second->getFirstPointer(),(*EdgeMap.begin()).second->getSecondPointer())){
+						cout <<"{"<<(*EdgeMap.begin()).second->getFirstPointer()->getNdata() <<","<<(*EdgeMap.begin()).second->getSecondPointer()->getNdata()<<","<<(*EdgeMap.begin()).first<<"} ";
+						GrafoKruskal.insertNode((*EdgeMap.begin()).second->getFirstPointer()->getNdata(),(*EdgeMap.begin()).second->getFirstPointer()->getXdata(),(*EdgeMap.begin()).second->getFirstPointer()->getYdata());
+						GrafoKruskal.insertNode((*EdgeMap.begin()).second->getSecondPointer()->getNdata(),(*EdgeMap.begin()).second->getFirstPointer()->getXdata(),(*EdgeMap.begin()).second->getFirstPointer()->getYdata());
+						GrafoKruskal.insertEdge((*EdgeMap.begin()).second->getEdata(),(*EdgeMap.begin()).second->getFirstPointer()->getNdata(),(*EdgeMap.begin()).second->getSecondPointer()->getNdata());
+					}
+					EdgeMap.erase(EdgeMap.begin());
+				}
+				cout << endl;
+				return GrafoKruskal;
+			}
+			else{
+				cout << "NO SE PUEDE HACER KRUSKAL, EL GRAFO ES DIRIGIDO"<<endl;
+				return GrafoKruskal;
+			}
+		}
+
+		void Floyd_Warshall(){
+			int inf=99;
+			int size=nodes.size();
+			int dist[size][size];
+			N steps[size][size];
+			map<N, int> node_pos;
+			map<int, N> pos_node;
+			int count=0;
+
+			for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //crea mapa
+				node_pos.insert(pair<N, int>((*ni)->getNdata(), count));
+				pos_node.insert(pair<int, N>(count, (*ni)->getNdata()));
+				count+=1;
+			}
+
+			count=0; //inicializa steps
+			for(auto node: nodes){
+				for(int i=0; i<size; i++){
+					steps[i][count]=node->getNdata();
+				}
+				count+=1;
+			}
+
+			for(int i=0; i<size; i++){ //inicializa con infinito
+				for(int j=0; j<size; j++){
+					dist[i][j]=inf;
+				}
+			}
+
+			for(int i=0; i<size; i++){ //diagonal con 0
+				dist[i][i]=0;
+			}
+
+			for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //pesos
+				for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+					dist[node_pos.find((*ni)->getNdata())->second][node_pos.find((*ei)->nodes[1]->getNdata())->second]=(*ei)->getEdata();
+				}
+			}
+
+			for(int k=0; k<size; k++){
+				for(int i=0; i<size; i++){
+					for(int j=0; j<size; j++){
+						if(dist[i][j] > dist[i][k]+ dist[k][j]){
+							dist[i][j] = dist[i][k]+dist[k][j];
+							steps[i][j] = pos_node.find(k)->second;
+						}
+					}
+				}
+			}
+
+			cout << "distancia:";
+			cout << endl;
+			for(int i=0; i<size; i++){
+				for(int j=0; j<size; j++){
+					cout << dist[i][j] << " ";
+				}
+				cout << endl;
+			}
+
+			cout << endl;
+
+			cout << "steps:";
+			cout << endl;
+			for(int i=0; i<size; i++){
+				for(int j=0; j<size; j++){
+					cout << steps[i][j] << " ";
+				}
+				cout << endl;
+			}
+		}
+
+    void print(){
+        for(auto ni: nodes){
+            cout << ni->getNdata() << "| ";
+            for(auto item: ni->edges){
+                cout << item->getSecondPointer()->getNdata() <<":"<<item->getEdata()<<' ';
             }
+                cout << endl;
         }
+    }
 
 
 };
