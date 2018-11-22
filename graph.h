@@ -19,7 +19,7 @@ using namespace std;
 
 class Traits {
 	public:
-		typedef int N; //Node es de tipo char
+		typedef char N; //Node es de tipo char
 		typedef int E; //Edge es de tipo int
 };
 
@@ -543,6 +543,76 @@ class Graph {
 				cout << endl;
 			}
 		}
+
+		map<N, int> Bellman_Ford(N startN){
+			map<N, int> dist;
+			queue<N> should_visit;
+			int inf=99;
+
+			should_visit.push(startN);
+			for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+				dist.insert(make_pair((*ni)->getNdata(), inf));
+			}
+			dist.find(startN)->second = 0;
+
+			for(int i=1; i<nodes.size(); i++){
+
+				bool path_changed=false;
+
+				for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+					if((*ni)->getNdata()!=startN){should_visit.push((*ni)->getNdata());};
+				}
+
+				while(!should_visit.empty()){
+					for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //works only if starN is the first Node and the map is in the same order as the nodes v
+						if((*ni)->getNdata() == should_visit.front()){
+							for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+								if(dist.find((*ni)->getNdata())->second != inf && (*ei)->nodes[1]->getNdata()!=startN){ //salta startN
+									if(dist.find((*ni)->getNdata())->second + (*ei)->getEdata() < dist.find((*ei)->nodes[1]->getNdata())->second && dist.find((*ei)->nodes[1]->getNdata())->second > 0){
+										dist.find((*ei)->nodes[1]->getNdata())->second = dist.find((*ni)->getNdata())->second + (*ei)->getEdata();
+										path_changed=true;
+									}
+								}
+							}
+							should_visit.pop();
+						}
+					}
+				}
+
+				if(path_changed==false){break;}
+
+				// for (typename map<N,int>::iterator it=dist.begin(); it!=dist.end(); ++it){
+				// 	cout << it->first << " => " << it->second << '\n';
+				// }
+				// cout << endl;
+			}
+
+			return dist;
+		}
+
+		// void greedyBFS(N node1, N node2){
+		// 	stack<N> mystack;
+		// 	mystack.push(node1);
+		// 	N current;
+		// 	E lightest = 9999;
+		// 	bool a=false;
+		//
+		// 	while(mystack.top()!=node2){
+		// 		for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+		// 			if(ni->getNdata()==mystack.top()){
+		// 				for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+		// 					if((*ei)->getEdata() < lightest){
+		// 						a = true;
+		// 						lightest = (*ei)->getEdata();
+		// 						current = (*ei)->nodes[1];
+		// 					}
+		// 				}
+		// 				if(a=true){mystack.push(current); a=false;}
+		// 				else{mystack.pop();}
+		// 			}
+		// 		}
+		// 	}
+		// }
 
     void print(){
         for(auto ni: nodes){
