@@ -12,6 +12,7 @@
 #include <map>
 #include <queue>
 #include <stack>
+#include <cmath>
 
 #include "node.h"
 #include "edge.h"
@@ -42,7 +43,7 @@ class Graph {
         NodeIte ni;
         EdgeIte ei;
         bool dir;
-
+				map<N,int> heuristica;
 
     public:
         Graph(bool dir):dir(dir){}
@@ -61,6 +62,14 @@ class Graph {
 							insertEdge(peso,nodo1,nodo2);
 					}
 					// TODO
+				}
+
+				void calculoHeuristica(node* ni,node* final){
+					heuristica.clear();
+					for(auto ni:nodes){
+						int calculo = sqrt(pow(ni->getXdata()-final->getXdata(),2)+pow(ni->getYdata()-final->getYdata(),2));
+						heuristica.insert(pair<N,int>(ni->getNdata(),calculo));
+					}
 				}
 
         void insertNode(N value, double x,double y){
@@ -153,6 +162,20 @@ class Graph {
 					}
 					return false;
 				}
+
+				E getEdgeWeight(N node1,N node2){
+					for(ni = nodes.begin(); ni != nodes.end(); ni++){
+						if((*ni)->getNdata() == node1){
+							for(ei = (*ni)->edges.begin(); ei != (*ni)->edges.end(); ei++){
+								if((*ei)->nodes[1]->getNdata()==node2){
+									return (*ei)->getEdata();
+									break;
+								}
+							}
+						}
+				}
+				return 0;
+			}
 
 				node* findParent(node* ni){
 					node* current = ni;
@@ -506,34 +529,42 @@ class Graph {
 					return dijkstraTable;
 				}
 
-				vector<N> A_estrella(N origen,N llegada){
-					setAllNotVisited();
+				Graph<Traits> A_estrella(N origen,N llegada){
 					//heuristica = 10*(abs(Xactual-Xdestino) + abs(Yactual-Ydestino)
-					map<N,int> heuristica;
+					Graph<Traits> GrafoAStar(1);
 					vector<N> visitados;
+					map<N,E> AStarTable;
 					node* temp = findNode(origen);
 					node* final = findNode(llegada);
+					calculoHeuristica(temp,final);
 					int menor;
 					N nodomenor;
-					map<char,int>::iterator it;
 					for(auto ni:nodes){
-						int calculo = (abs(ni->getXdata()-final->getXdata())+abs(ni->getYdata()-final->getYdata()));
-						heuristica.insert(pair<N,int>(ni->getNdata(),calculo));
+						if(ni!=temp){AStarTable.insert(pair<N,int>(ni->getNdata(),INT_MAX));}
+						else{AStarTable.insert(pair<N,int>(ni->getNdata(),0));}
 					}
 					while(temp != final){
 						visitados.push_back(temp->getNdata());
 						menor = INT_MAX;
 						for(auto ei:temp->edges){
-							it = heuristica.find(ei->getSecondPointer()->getNdata());
-							if(ei->getEdata()+it->second<menor && find(visitados.begin(),visitados.end(),ei->getSecondPointer()->getNdata())==visitados.end()){
-								menor = ei->getEdata()+it->second;
+								int rootvalueInTable = AStarTable[temp->getNdata()];
+								int movevalueInTable = AStarTable[ei->getSecondPointer()->getNdata()];
+							if(ei->getEdata()+rootvalueInTable+heuristica[ei->getSecondPointer()->getNdata()] < movevalueInTable){
+								AStarTable[ei->getSecondPointer()->getNdata()] = ei->getEdata()+rootvalueInTable+heuristica[ei->getSecondPointer()->getNdata()];
+							}
+							if(ei->getEdata()+rootvalueInTable+heuristica[ei->getSecondPointer()->getNdata()] < menor && find(visitados.begin(),visitados.end(),ei->getSecondPointer()->getNdata())==visitados.end()){
+								menor = ei->getEdata()+rootvalueInTable+heuristica[ei->getSecondPointer()->getNdata()];
 								nodomenor = ei->getSecondPointer()->getNdata();
 							}
 						}
-						temp = findNode(nodomenor);
+						node* nuevonodomenor = findNode(nodomenor);
+						GrafoAStar.insertNode(temp->getNdata(),temp->getXdata(),temp->getYdata());
+						GrafoAStar.insertNode(nuevonodomenor->getNdata(),nuevonodomenor->getXdata(),nuevonodomenor->getYdata());
+						GrafoAStar.insertEdge(getEdgeWeight(temp->getNdata(),nuevonodomenor->getNdata()),temp->getNdata(),nuevonodomenor->getNdata());
+						temp = nuevonodomenor;
 					}
 					visitados.push_back(temp->getNdata());
-					return visitados;
+					return GrafoAStar;
 				}
 
         void print(){
