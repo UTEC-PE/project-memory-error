@@ -567,6 +567,182 @@ class Graph {
 					return GrafoAStar;
 				}
 
+vector<pair<N,N>> greedyBFS(N origen, N llegada){
+			node* nOrigen = findNode(origen);
+			node* nLlegada = findNode(llegada);
+			calculoHeuristica(nOrigen, nLlegada);
+
+			vector<pair<N,N>> greedyBFS_path;
+
+			map<int, N> should_visit;
+			set<N> steped_on;
+			set<N> visited;
+			steped_on.insert(origen);
+
+			N current = origen;
+			bool origenNotLlegada=false;
+
+			while(current != llegada ){
+				origenNotLlegada=true;
+				for(ni=nodes.begin(); ni!=nodes.end(); ++ni){
+					if((*ni)->getNdata()==current){
+						cout << "current: " << current << endl;
+						for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+							if(visited.find((*ei)->nodes[1]->getNdata()) == visited.end() && steped_on.find((*ei)->nodes[1]->getNdata()) == steped_on.end()){ //if the edge is not in the map and has not been steped_on
+								should_visit.insert( pair<int,N>(heuristica.find((*ei)->nodes[1]->getNdata())->second , (*ei)->nodes[1]->getNdata()) );
+								visited.insert((*ei)->nodes[1]->getNdata());
+							}
+						}
+						cout << "map before: " << endl;
+						for (auto it=should_visit.begin(); it!=should_visit.end(); ++it)
+						std::cout << it->first << " => " << it->second << '\n';
+
+						greedyBFS_path.push_back(make_pair(current, should_visit.begin()->second));
+						current = should_visit.begin()->second;
+						if(current==llegada){break;}
+						steped_on.insert(current);
+						should_visit.erase(should_visit.begin());
+
+						cout << "map after: " << endl;
+						for (auto it=should_visit.begin(); it!=should_visit.end(); ++it)
+						std::cout << it->first << " => " << it->second << '\n';
+					}
+				}
+			}
+
+			cout << "Heuristica: " << endl;
+			for (auto it=heuristica.begin(); it!=heuristica.end(); ++it)
+			std::cout << it->first << " => " << it->second << '\n';
+
+			cout << "Path: " << endl;
+			for (auto i = 0; i<greedyBFS_path.size(); ++i){
+				 cout << greedyBFS_path[i].first << " "
+							<< greedyBFS_path[i].second << endl;
+			}
+			cout << endl;
+
+			cout << "should_visit: " << endl;
+			while (!should_visit.empty())
+			{
+				std::cout << should_visit.begin()->first << " => " << should_visit.begin()->second << '\n';
+				should_visit.erase(should_visit.begin());
+			}
+			cout << endl;
+
+			cout << "steped_on: " << endl;
+			for (auto it=steped_on.begin(); it!=steped_on.end(); ++it)
+				std::cout << ' ' << *it;
+			cout << endl;
+
+			cout << "current: " << current << endl;
+
+
+			if(!origenNotLlegada){ // si el origen es igual a la llegada, el camino minimo seria el mismo
+				greedyBFS_path.push_back(make_pair(origen, origen));
+			}
+
+			return greedyBFS_path;
+		}
+
+
+				map<N, int> Bellman_Ford(N startN){
+							map<N, int> dist;
+							queue<N> should_visit;
+							int inf=99;
+
+							should_visit.push(startN);
+							for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+								dist.insert(make_pair((*ni)->getNdata(), inf));
+							}
+							dist.find(startN)->second = 0;
+
+							for(int i=1; i<nodes.size(); i++){
+
+								bool path_changed=false;
+
+								for(ni=nodes.begin(); ni!=nodes.end(); ni++){
+									if((*ni)->getNdata()!=startN){should_visit.push((*ni)->getNdata());};
+								}
+
+								while(!should_visit.empty()){
+									for(ni=nodes.begin(); ni!=nodes.end(); ++ni){ //works only if starN is the first Node and the map is in the same order as the nodes v
+										if((*ni)->getNdata() == should_visit.front()){
+											for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+												if(dist.find((*ni)->getNdata())->second != inf && (*ei)->nodes[1]->getNdata()!=startN){ //salta startN
+													if(dist.find((*ni)->getNdata())->second + (*ei)->getEdata() < dist.find((*ei)->nodes[1]->getNdata())->second && dist.find((*ei)->nodes[1]->getNdata())->second > 0){
+														dist.find((*ei)->nodes[1]->getNdata())->second = dist.find((*ni)->getNdata())->second + (*ei)->getEdata();
+														path_changed=true;
+													}
+												}
+											}
+											should_visit.pop();
+										}
+									}
+								}
+
+								if(path_changed==false){break;}
+							}
+
+							return dist;
+						}
+
+
+pair<vector<vector<int>>,vector<vector<N>>> Floyd_warshall(){
+		int inf=99;
+		int size=nodes.size();
+		vector<vector<int>> dist;
+		vector<vector<N>> steps;
+		map<N, int> node_pos;
+		map<int, N> pos_node;
+		pair<vector<vector<int>>,vector<vector<N>>> Floyd_Warshall;
+		int count=0;
+
+		for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //crea mapa
+			node_pos.insert(pair<N, int>((*ni)->getNdata(), count));
+			pos_node.insert(pair<int, N>(count, (*ni)->getNdata()));
+			count+=1;
+		}
+
+		vector<N> node_vec; //inicializa steps
+		for(auto node: nodes){
+			node_vec.push_back(node->getNdata());
+		}
+		for(int i=0; i<size; i++){
+			steps.push_back(node_vec);
+		}
+
+		vector<int> inf_vec; //inicializa dist
+		for(int i=0; i<size; i++)
+		{
+			inf_vec.push_back(inf);
+		}
+		for(int i=0; i<size; i++)
+		{
+			dist.push_back(inf_vec);
+		}
+		for(int i=0; i<size; i++){
+			dist[i][i]=0;
+		}
+
+		for(ni=nodes.begin(); ni!=nodes.end(); ni++){ //pesos
+			for(ei=(*ni)->edges.begin(); ei!=(*ni)->edges.end(); ++ei){
+				dist[node_pos.find((*ni)->getNdata())->second][node_pos.find((*ei)->nodes[1]->getNdata())->second]=(*ei)->getEdata();
+			}
+		}
+
+		for(int k=0; k<size; k++){
+			for(int i=0; i<size; i++){
+				for(int j=0; j<size; j++){
+					if(dist[i][j] > dist[i][k]+ dist[k][j]){
+						dist[i][j] = dist[i][k]+dist[k][j];
+						steps[i][j] = pos_node.find(k)->second;
+					}
+				}
+			}
+		}
+		return Floyd_Warshall = make_pair(dist, steps);
+	}
+
         void print(){
             for(auto ni: nodes){
                 cout << ni->getNdata() << "| ";
