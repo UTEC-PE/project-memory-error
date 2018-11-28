@@ -1,45 +1,58 @@
 
 #include <iostream>
-
+#include <thread>
+#include <iomanip>
 #include "graph.h"
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
-	graph G(1);
-	G.insertNode('A', 0, 0);
-  G.insertNode('B', 0, 0);
-  G.insertNode('C', 0, 0);
-  G.insertNode('D', 0, 0);
-  G.insertNode('E', 0, 0);
+#define NUM_THREADS 4
 
-  // G.insertEdge(6, 'A', 'C');
-	// G.insertEdge(3, 'A', 'D');
-  // G.insertEdge(3, 'B', 'A');
-  // G.insertEdge(2, 'C', 'D');
-  // G.insertEdge(1, 'D', 'C');
-  // G.insertEdge(1, 'D', 'B');
-  // G.insertEdge(4, 'E', 'B');
-	// G.insertEdge(2, 'E', 'D');
-
-	G.insertEdge(4, 'A', 'B');
-	G.insertEdge(8, 'A', 'C');
-	G.insertEdge(4, 'B', 'A');
-	G.insertEdge(1, 'B', 'C');
-	G.insertEdge(2, 'B', 'D');
-	G.insertEdge(8, 'C', 'A');
-	G.insertEdge(4, 'C', 'D');
-	G.insertEdge(2, 'C', 'E');
-	G.insertEdge(2, 'D', 'B');
-	G.insertEdge(4, 'D', 'C');
-	G.insertEdge(7, 'D', 'E');
-	G.insertEdge(2, 'E', 'C');
-	G.insertEdge(7, 'E', 'D');
-
-	G.print();
-	cout << endl;
-	G.Floyd_Warshall();
-	return 0;
+void printA_estrella(graph migrafo,char inicio,char final){
+	graph datosEstrella = migrafo.A_estrella(inicio,final);
+	datosEstrella.print();
+	cout <<endl;
 }
 
-//a la hora de usar kruskal que no chanque al grafo
+int main(int argc, char *argv[]) {
+	thread threads[NUM_THREADS];
+	graph migrafo(1,"graph_construct4.txt");/*
+	threads[0] = thread(printA_estrella,migrafo,'A','F');
+	threads[1] = thread(printA_estrella,migrafo,'D','F');
+	threads[2] = thread(printA_estrella,migrafo,'C','F');
+	threads[3] = thread(printA_estrella,migrafo,'A','H');
+	for(int i = 0; i < NUM_THREADS;i++){threads[i].join();}
+	migrafo.greedyBFS('A','H');
+	map<char,int> mymap = migrafo.Bellman_Ford('A');
+	cout << "Bellman Ford: ";
+	for(auto x:mymap){
+		cout << x.first <<":"<<x.second<<" ";
+	}
+	cout <<endl<< "Dijkstra: ";
+	map<char,int> datosDijkstra = migrafo.dijkstra('A');
+	for(auto x: datosDijkstra){cout <<x.first<<":"<<x.second<<" ";}
+	auto mymatrices = migrafo.Floyd_warshall();
+  for (int i = 0; i < 9; i++){
+      for (int j = 0; j < 9; j++){
+          if (mymatrices.first[i][j] == 99)
+              cout << setw(5) << "INF";
+          else
+              cout << setw(5) << mymatrices.first[i][j];
+      }
+      cout <<  endl;
+  }
+  cout << endl;
+  for (int i = 0; i < 9; i++){
+      for (int j = 0; j < 9; j++){
+            cout << setw(5) << mymatrices.second[i][j];
+      }
+      cout <<  endl;
+  }
+	migrafo.print();
+	map<char,int> datosDijkstra = migrafo.dijkstra('A');
+	for(auto x: datosDijkstra){cout <<x.first<<":"<<x.second<<" ";}
+	cout << endl;
+
+	*/
+	return 0;
+}
